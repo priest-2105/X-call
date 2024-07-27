@@ -1,3 +1,4 @@
+const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
@@ -9,6 +10,7 @@ module.exports = {
     app: './src/index.js'
   },
   output: {
+    path: path.resolve(__dirname, 'build'), // Specify the output directory
     filename: 'js/[name].min.js'
   },
   module: {
