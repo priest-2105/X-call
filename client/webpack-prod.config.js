@@ -55,7 +55,7 @@ module.exports = {
   plugins: [
     new MiniCssExtractPlugin({ filename: 'css/[name].min.css' }),
     new HtmlWebpackPlugin({
-      title: 'React VideoCall - Minh Son Nguyen',
+      title: 'React VideoCall - Fawaz Bailey',
       filename: 'index.html',
       template: 'src/html/index.html'
     })

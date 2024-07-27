@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2017 Minh Son Nguyen
+Copyright (c) 2017 Fawaz Bailey
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -48,7 +48,7 @@ module.exports = {
   plugins: [
     new HotModuleReplacementPlugin(),
     new HtmlWebpackPlugin({
-      title: 'React VideoCall - Minh Son Nguyen',
+      title: 'React VideoCall - Fawaz Bailey',
       filename: 'index.html',
       template: 'src/html/index.html'
     })
@@ -59,7 +59,8 @@ module.exports = {
     proxy: [
       {
         context: '/bridge',
-        target: `http://localhost:${socketConfig.PORT}`
+        target: `https://x-call-server.onrender.com`
+        // target: `http://localhost:${socketConfig.PORT}`
       }
     ]
   },
