@@ -1312,3 +1312,95 @@ const createLocalParticipant = () => {
 
   
 
+
+
+
+
+//   Event handler for UI Control 
+
+
+
+
+micButton.addEventListener("click", () => {
+    if (micEnable) {
+      disableMic();
+    } else {
+      enableMic();
+    }
+    toggleControls();
+  });
+  
+  camButton.addEventListener("click", async () => {
+    if (webCamEnable) {
+      webCamEnable = false;
+      if (localParticipant) {
+        localParticipant.srcObject.getTracks().forEach(track => track.stop());
+        localParticipant.srcObject = null;
+      }
+    } else {
+      webCamEnable = true;
+      await enableCam();
+    }
+    toggleControls();
+  });
+  
+  copyMeetingIdButton.addEventListener("click", () => {
+    const meetingId = document.getElementById("meetingid").value;
+    navigator.clipboard.writeText(meetingId);
+  });
+  
+  btnScreenShare.addEventListener("click", async () => {
+    if (screenShareOn) {
+      meeting.disableScreenShare();
+    } else {
+      await meeting.enableScreenShare({
+        videoElement: videoScreenShare,
+      });
+    }
+    screenShareOn = !screenShareOn;
+  });
+  
+  btnRaiseHand.addEventListener("click", () => {
+    meeting.raiseHand();
+    btnRaiseHand.classList.toggle("raised");
+  });
+  
+  btnSend.addEventListener("click", () => {
+    const message = document.getElementById("chatInput").value;
+    if (message.trim()) {
+      meeting.sendMessage(message);
+      document.getElementById("chatInput").value = "";
+    }
+  });
+  
+  btnStartRecording.addEventListener("click", async () => {
+    await meeting.startRecording();
+    btnStartRecording.style.display = "none";
+    btnStopRecording.style.display = "block";
+  });
+  
+  btnStopRecording.addEventListener("click", async () => {
+    await meeting.stopRecording();
+    btnStartRecording.style.display = "block";
+    btnStopRecording.style.display = "none";
+  });
+  
+
+
+
+
+//   Initial Setup 
+
+
+
+document.addEventListener("DOMContentLoaded", async () => {
+    await tokenGeneration();
+    const urlParams = new URLSearchParams(window.location.search);
+    const meetingId = urlParams.get("meetingId");
+    const joinMeetingName = urlParams.get("name") || JOIN_MEETING_NAME;
+  
+    if (meetingId) {
+      await validateMeeting(meetingId, joinMeetingName);
+    }
+  });
+  
