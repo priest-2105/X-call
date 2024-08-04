@@ -1067,3 +1067,49 @@ const tokenGeneration = async () => {
   
 
 
+// Meeting Validation and joining 
+
+
+const validateMeeting = async (meetingId, joinMeetingName) => {
+    if (token) {
+      const url = `${API_BASE_URL}/v2/rooms/validate/${meetingId}`;
+      const options = { method: "GET", headers: { Authorization: token } };
+  
+      const result = await fetch(url, options)
+        .then(response => response.json())
+        .catch(error => {
+          console.error("error", error);
+          alert("Invalid Meeting Id");
+          window.location.href = "/";
+        });
+  
+      if (result.roomId === meetingId) {
+        document.getElementById("meetingid").value = meetingId;
+        document.getElementById("joinPage").style.display = "none";
+        document.getElementById("gridPpage").style.display = "flex";
+        toggleControls();
+        startMeeting(token, meetingId, joinMeetingName);
+      }
+    } else {
+      const options = {
+        method: "POST",
+        headers: { Authorization: token, "Content-Type": "application/json" },
+      };
+  
+      const result = await fetch(`${AUTH_URL}/validatemeeting/${meetingId}`, options)
+        .then(response => response.json())
+        .catch(console.error);
+  
+      if (result.meetingId) {
+        document.getElementById("meetingid").value = result.meetingId;
+        document.getElementById("joinPage").style.display = "none";
+        document.getElementById("gridPpage").style.display = "flex";
+        toggleControls();
+        startMeeting(token, result.meetingId, joinMeetingName);
+      } else {
+        alert("Invalid Meeting ID");
+        window.location.href = "/";
+      }
+    }
+  };
+  
