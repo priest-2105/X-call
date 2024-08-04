@@ -1,9 +1,9 @@
 client/dist/
 /past
-client/index.html
-/node_modules
-node_modules
-.env
+# client/index.html
+# /client/node_modules
+*node_modules
+*.env
 
 # misc
 .DS_Store
