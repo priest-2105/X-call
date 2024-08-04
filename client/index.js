@@ -1113,3 +1113,202 @@ const validateMeeting = async (meetingId, joinMeetingName) => {
     }
   };
   
+
+
+
+
+
+
+
+
+//   Participation management 
+
+
+const addParticipantToList = ({ id, displayName }) => {
+    const participantTemplate = document.createElement("div");
+    participantTemplate.className = "row";
+    participantTemplate.style.padding = "4px";
+    participantTemplate.style.marginTop = "1px";
+    participantTemplate.style.marginLeft = "7px";
+    participantTemplate.style.marginRight = "7px";
+    participantTemplate.style.borderRadius = "3px";
+    participantTemplate.style.border = "1px solid rgb(61, 60, 78)";
+    participantTemplate.style.backgroundColor = "rgb(0, 0, 0)";
+  
+    const colIcon = document.createElement("div");
+    colIcon.className = "col-2";
+    colIcon.innerHTML = "Icon";
+    participantTemplate.appendChild(colIcon);
+  
+    const content = document.createElement("div");
+    colIcon.className = "col-3";
+    colIcon.innerHTML = displayName;
+    participantTemplate.appendChild(content);
+  
+    participantsList.appendChild(participantTemplate);
+    participantsList.appendChild(document.createElement("br"));
+  };
+  
+
+
+
+
+
+
+
+//   Meeting Function 
+
+
+
+
+const createLocalParticipant = () => {
+    totalParticipants++;
+    localParticipant = createVideoElement(meeting.localParticipant.id);
+    localParticipantAudio = createAudioElement(meeting.localParticipant.id);
+    videoContainer.appendChild(localParticipant);
+  };
+  
+  const startMeeting = async (token, meetingId, name) => {
+    if (joinPageVideoStream !== null) {
+      const tracks = joinPageVideoStream.getTracks();
+      tracks.forEach(track => track.stop());
+      joinPageVideoStream = null;
+      joinPageWebcam.srcObject = null;
+    }
+  
+    window.VideoSDK.off("device-changed", deviceChangeEventListener);
+  
+    window.VideoSDK.config(token);
+    let customVideoTrack, customAudioTrack;
+  
+    if (webCamEnable) {
+      customVideoTrack = await window.VideoSDK.createCameraVideoTrack({
+        cameraId: cameraDeviceDropDown.value,
+        optimizationMode: "motion",
+        multiStream: false,
+      });
+    }
+  
+    if (micEnable) {
+      customAudioTrack = await window.VideoSDK.createMicrophoneAudioTrack({
+        microphoneId: microphoneDeviceDropDown.value,
+        encoderConfig: "high_quality### Continuation of Meeting Functions",});
+  
+        customAudioTrack = await window.VideoSDK.createMicrophoneAudioTrack({
+        microphoneId: microphoneDeviceDropDown.value,
+        encoderConfig: "high_quality",
+      });
+    }
+  
+    meeting = await window.VideoSDK.initMeeting({
+      meetingId,
+      name,
+      micEnabled: micEnable,
+      webcamEnabled: webCamEnable,
+      customAudioTrack,
+      customVideoTrack,
+    });
+  
+    // Event listeners for meeting
+    meeting.on("meeting-joined", () => {
+      createLocalParticipant();
+      updateParticipantCount();
+    });
+  
+    meeting.on("participant-joined", (participant) => {
+      addParticipant(participant);
+      updateParticipantCount();
+    });
+  
+    meeting.on("participant-left", (participant) => {
+      removeParticipant(participant.id);
+      updateParticipantCount();
+    });
+  
+    meeting.on("mic-requested", (participant) => {
+      console.log(`${participant.displayName} requested to unmute mic.`);
+    });
+  
+    meeting.on("camera-requested", (participant) => {
+      console.log(`${participant.displayName} requested to unmute camera.`);
+    });
+  
+    await meeting.join();
+  };
+  
+  const createVideoElement = (participantId) => {
+    const videoElement = document.createElement("video");
+    videoElement.id = `video-${participantId}`;
+    videoElement.autoplay = true;
+    videoElement.playsInline = true;
+    videoElement.style.width = "100%";
+    return videoElement;
+  };
+  
+  const createAudioElement = (participantId) => {
+    const audioElement = document.createElement("audio");
+    audioElement.id = `audio-${participantId}`;
+    audioElement.autoplay = true;
+    audioElement.playsInline = true;
+    return audioElement;
+  };
+  
+  const addParticipant = (participant) => {
+    totalParticipants++;
+    participants.push(participant);
+    const videoElement = createVideoElement(participant.id);
+    const audioElement = createAudioElement(participant.id);
+    videoContainer.appendChild(videoElement);
+    videoContainer.appendChild(audioElement);
+    addParticipantToList(participant);
+  };
+  
+  const removeParticipant = (participantId) => {
+    totalParticipants--;
+    participants = participants.filter(p => p.id !== participantId);
+    const videoElement = document.getElementById(`video-${participantId}`);
+    const audioElement = document.getElementById(`audio-${participantId}`);
+    if (videoElement) videoContainer.removeChild(videoElement);
+    if (audioElement) videoContainer.removeChild(audioElement);
+    updateParticipantsList();
+  };
+  
+  const updateParticipantCount = () => {
+    document.getElementById("totalParticipants").innerText = totalParticipants;
+  };
+  
+  const updateParticipantsList = () => {
+    participantsList.innerHTML = "";
+    participants.forEach(addParticipantToList);
+  };
+  
+  const toggleControls = () => {
+    micButton.classList.toggle("enabled", micEnable);
+    camButton.classList.toggle("enabled", webCamEnable);
+  };
+  
+  const enableCam = async () => {
+    if (cameraPermissionAllowed) {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      joinPageVideoStream = stream;
+      joinPageWebcam.srcObject = stream;
+    }
+  };
+  
+  const enableMic = async () => {
+    if (microphonePermissionAllowed) {
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+      micEnable = true;
+    }
+  };
+  
+  const disableMic = () => {
+    micEnable = false;
+    if (localParticipantAudio) {
+      localParticipantAudio.srcObject.getTracks().forEach(track => track.stop());
+      localParticipantAudio = null;
+    }
+  };
+
+  
+
