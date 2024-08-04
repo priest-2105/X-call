@@ -3,7 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
-const { default: fetch } = require("node-fetch");
+const fetch = require("node-fetch");
 const jwt = require("jsonwebtoken");
 
 const PORT = 9000;
@@ -14,12 +14,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
-//
 app.get("/", (req, res) => {
   res.send("Xcall Server Active");
 });
 
-//
 app.get("/get-token", (req, res) => {
   const API_KEY = process.env.VIDEOSDK_API_KEY;
   const SECRET_KEY = process.env.VIDEOSDK_SECRET_KEY;
@@ -32,10 +30,14 @@ app.get("/get-token", (req, res) => {
   };
 
   const token = jwt.sign(payload, SECRET_KEY, options);
+
+  // Log the token for confirmation
+  console.log(`Generated Token: ${token}`);
+
   res.json({ token });
 });
 
-//
+
 app.post("/create-meeting/", (req, res) => {
   const { token, region } = req.body;
   const url = `${process.env.VIDEOSDK_API_ENDPOINT}/api/meetings`;
@@ -51,7 +53,6 @@ app.post("/create-meeting/", (req, res) => {
     .catch((error) => console.error("error", error));
 });
 
-//
 app.post("/validate-meeting/:meetingId", (req, res) => {
   const token = req.body.token;
   const meetingId = req.params.meetingId;
@@ -69,7 +70,6 @@ app.post("/validate-meeting/:meetingId", (req, res) => {
     .catch((error) => console.error("error", error));
 });
 
-//
 app.listen(PORT, () => {
   console.log(`API server listening at http://localhost:${PORT}`);
 });
