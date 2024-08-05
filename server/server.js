@@ -1,10 +1,10 @@
-require("dotenv").config();
+require('dotenv').config(); // Must be at the top
 
-const express = require("express");
-const cors = require("cors");
-const morgan = require("morgan");
-const fetch = require("node-fetch");
-const jwt = require("jsonwebtoken");
+const express = require('express');
+const cors = require('cors');
+const morgan = require('morgan');
+const fetch = require('node-fetch');
+const jwt = require('jsonwebtoken');
 
 const PORT = 9000;
 const app = express();
@@ -24,6 +24,9 @@ app.get("/get-token", (req, res) => {
   const API_KEY = process.env.VIDEOSDK_API_KEY;
   const SECRET_KEY = process.env.VIDEOSDK_SECRET_KEY;
 
+  console.log('API_KEY:', API_KEY);
+  console.log('SECRET_KEY:', SECRET_KEY);
+
   if (!API_KEY || !SECRET_KEY) {
     return res.status(500).json({ error: "API_KEY or SECRET_KEY not defined in environment variables" });
   }
@@ -31,7 +34,7 @@ app.get("/get-token", (req, res) => {
   const options = { expiresIn: "10m", algorithm: "HS256" };
   const payload = {
     apikey: API_KEY,
-    permissions: ["allow_join", "allow_mod"], // also accepts "ask_join"
+    permissions: ["allow_join", "allow_mod"],
   };
 
   try {
@@ -44,6 +47,7 @@ app.get("/get-token", (req, res) => {
   }
 });
 
+
 // Create Meeting
 app.post("/create-meeting/", (req, res) => {
   const { token, region } = req.body;
@@ -55,14 +59,19 @@ app.post("/create-meeting/", (req, res) => {
   const url = `${process.env.VIDEOSDK_API_ENDPOINT}/api/meetings`;
   const options = {
     method: "POST",
-    headers: { Authorization: token, "Content-Type": "application/json" },
+    headers: {
+      Authorization: `Bearer ${token}`,  // Ensure the correct prefix
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify({ region }),
   };
 
   fetch(url, options)
     .then((response) => {
       if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
+        return response.text().then(text => {
+          throw new Error(`HTTP error! status: ${response.status}, message: ${text}`);
+        });
       }
       return response.json();
     })
@@ -72,6 +81,7 @@ app.post("/create-meeting/", (req, res) => {
       res.status(500).json({ error: error.message });
     });
 });
+
 
 // Validate Meeting
 app.post("/validate-meeting/:meetingId", (req, res) => {
