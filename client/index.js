@@ -920,9 +920,261 @@ const JOIN_MEETING_NAME = "JSSDK";
 
 
 
+// DOM ELEMENTS 
+const videoContainer = document.getElementById("videoContainer");
+const micButton = document.getElementById("micButton");
+const camButton = document.getElementById("camButton");
+const copyMeetingIdButton = document.getElementById("meetingid");
+const contentRaiseHand = document.getElementById("contentRaiseHand");
+const btnScreenShare = document.getElementById("btnScreenShare");
+const videoScreenShare = document.getElementById("videoScreenShare");
+const btnRaiseHand = document.getElementById("btnRaiseHand");
+const btnSend = document.getElementById("btnSend");
+const participantsList = document.getElementById("participantsList");
+const videoCamOff = document.getElementById("main-pg-cam-off");
+const videoCamOn = document.getElementById("main-pg-cam-on");
+const micOn = document.getElementById("main-pg-unmute-mic");
+const micOff = document.getElementById("main-pg-mute-mic");
+const btnStartRecording = document.getElementById("btnStartRecording");
+const btnStopRecording = document.getElementById("btnStopRecording");
+const videoPlayback = document.getElementById("videoPlayback");
+const cameraDeviceDropDown = document.getElementById('cameraDeviceDropDown');
+const microphoneDeviceDropDown = document.getElementById('microphoneDeviceDropDown');
+const playBackDeviceDropDown = document.getElementById('playBackDeviceDropDown');
+const joinPageWebcam = document.getElementById("joinCam");
 
 
 
 
 
+
+
+
+// Variables
+
+let meeting = "";
+let localParticipant;
+let localParticipantAudio;
+let createMeetingFlag = 0;
+let joinMeetingFlag = 0;
+let token = "";
+let micEnable = false;
+let webCamEnable = false;
+let totalParticipants = 0;
+let remoteParticipantId = "";
+let participants = [];
+let meetingCode = "";
+let screenShareOn = false;
+let joinPageVideoStream = null;
+let cameraPermissionAllowed = true;
+let microphonePermissionAllowed = true;
+let deviceChangeEventListener;
+
+
+
+// Utility Functions
+
+const requestPermissions = async () => {
+  const requestPermission = await window.VideoSDK.requestPermission(
+    window.VideoSDK.Constants.permission.AUDIO_AND_VIDEO,
+  );
+
+  console.log(
+    "Request Audio and Video Permissions",
+    requestPermission.get(window.VideoSDK.Constants.permission.AUDIO),
+    requestPermission.get(window.VideoSDK.Constants.permission.VIDEO)
+  );
+
+  return requestPermission;
+};
+
+const checkPermissions = async () => {
+  const checkAudioVideoPermission = await window.VideoSDK.checkPermissions();
+
+  cameraPermissionAllowed = checkAudioVideoPermission.get(window.VideoSDK.Constants.permission.VIDEO);
+  microphonePermissionAllowed = checkAudioVideoPermission.get(window.VideoSDK.Constants.permission.AUDIO);
+};
+
+const updateDevices = async () => {
+  await checkPermissions();
+
+  if (cameraPermissionAllowed) {
+    const cameras = await window.VideoSDK.getCameras();
+    updateDropDown(cameraDeviceDropDown, cameras);
+  } else {
+    disableDropDown(cameraDeviceDropDown, "Permission needed");
+  }
+
+  if (microphonePermissionAllowed) {
+    const microphones = await window.VideoSDK.getMicrophones();
+    const playBackDevices = await window.VideoSDK.getPlaybackDevices();
+    updateDropDown(microphoneDeviceDropDown, microphones);
+    updateDropDown(playBackDeviceDropDown, playBackDevices);
+  } else {
+    disableDropDown(microphoneDeviceDropDown, "Permission needed");
+    disableDropDown(playBackDeviceDropDown, "Permission needed");
+  }
+};
+
+const updateDropDown = (dropDown, devices) => {
+  dropDown.innerHTML = "";
+  devices.forEach(item => {
+    const option = document.createElement('option');
+    option.value = item.deviceId;
+    option.text = item.label;
+    dropDown.appendChild(option);
+  });
+};
+
+const disableDropDown = (dropDown, text) => {
+  const option = document.createElement('option');
+  option.value = text;
+  option.text = text;
+  dropDown.appendChild(option);
+  dropDown.disabled = true;
+  dropDown.style.cursor = "not-allowed";
+};
+
+const setAudioOutputDevice = (deviceId) => {
+  const audioTags = document.getElementsByTagName("audio");
+  Array.from(audioTags).forEach(audioTag => audioTag.setSinkId(deviceId));
+};
+
+
+
+
+
+
+// Event Listeners
+
+window.addEventListener("load", async () => {
+  await requestPermissions();
+  await updateDevices();
+  await enableCam();
+  await enableMic();
+
+  await window.VideoSDK.getNetworkStats({ timeoutDuration: 120000 })
+    .then(result => console.log("Network Stats : ", result))
+    .catch(error => console.log("Error in Network Stats : ", error));
+
+  deviceChangeEventListener = async () => {
+    await updateDevices();
+    await enableCam();
+  };
+  window.VideoSDK.on("device-changed", deviceChangeEventListener);
+});
+
+
+
+
+
+
+// Token Generation
+
+const fetchToken = async () => {
+  if (TOKEN) {
+    return TOKEN;
+  } else if (AUTH_URL) {
+    try {
+      const response = await fetch(`${AUTH_URL}/generateJWTToken`);
+      const data = await response.json();
+      return data.token;
+    } catch (error) {
+      console.error("Error fetching token:", error);
+      alert("Failed to fetch token.");
+    }
+  } else {
+    alert("Set Your configuration details first");
+    window.location.href = "/";
+  }
+};
+
+const tokenGeneration = async () => {
+  token = await fetchToken();
+};
+
+
+
+
+
+
+
+
+
+
+
+// Meeting Validation and Joining
+
+const validateMeeting = async (meetingId, joinMeetingName) => {
+  if (token) {
+    const url = `${API_BASE_URL}/v2/rooms/validate/${meetingId}`;
+    const options = { method: "GET", headers: { Authorization: token } };
+
+    const result = await fetch(url, options)
+      .then(response => response.json())
+      .catch(error => {
+        console.error("error", error);
+        alert("Invalid Meeting Id");
+        window.location.href = "/";
+      });
+
+    if (result.roomId === meetingId) {
+      document.getElementById("meetingid").value = meetingId;
+      document.getElementById("joinPage").style.display = "none";
+      document.getElementById("gridPpage").style.display = "flex";
+      toggleControls();
+      startMeeting(token, meetingId, joinMeetingName);
+    }
+  } else {
+    const options = {
+      method: "POST",
+      headers: { Authorization: token, "Content-Type": "application/json" },
+    };
+
+    const result = await fetch(`${AUTH_URL}/validatemeeting/${meetingId}`, options)
+      .then(response => response.json())
+      .catch(console.error);
+
+    if (result.meetingId) {
+      document.getElementById("meetingid").value = result.meetingId;
+      document.getElementById("joinPage").style.display = "none";
+      document.getElementById("gridPpage").style.display = "flex";
+      toggleControls();
+      startMeeting(token, result.meetingId, joinMeetingName);
+    } else {
+      alert("Invalid Meeting ID");
+      window.location.href = "/";
+    }
+  }
+};
+
+
+
+// Participant Management
+
+
+const addParticipantToList = ({ id, displayName }) => {
+  const participantTemplate = document.createElement("div");
+  participantTemplate.className = "row";
+  participantTemplate.style.padding = "4px";
+  participantTemplate.style.marginTop = "1px";
+  participantTemplate.style.marginLeft = "7px";
+  participantTemplate.style.marginRight = "7px";
+  participantTemplate.style.borderRadius = "3px";
+  participantTemplate.style.border = "1px solid rgb(61, 60, 78)";
+  participantTemplate.style.backgroundColor = "rgb(0, 0, 0)";
+
+  const colIcon = document.createElement("div");
+  colIcon.className = "col-2";
+  colIcon.innerHTML = "Icon";
+  participantTemplate.appendChild(colIcon);
+
+  const content = document.createElement("div");
+  colIcon.className = "col-3";
+  colIcon.innerHTML = displayName;
+  participantTemplate.appendChild(content);
+
+  participantsList.appendChild(participantTemplate);
+  participantsList.appendChild(document.createElement("br"));
+};
 
