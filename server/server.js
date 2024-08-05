@@ -24,9 +24,6 @@ app.get("/get-token", (req, res) => {
   const API_KEY = process.env.VIDEOSDK_API_KEY;
   const SECRET_KEY = process.env.VIDEOSDK_SECRET_KEY;
 
-  console.log('API_KEY:', API_KEY);
-  console.log('SECRET_KEY:', SECRET_KEY);
-
   if (!API_KEY || !SECRET_KEY) {
     return res.status(500).json({ error: "API_KEY or SECRET_KEY not defined in environment variables" });
   }
@@ -39,14 +36,11 @@ app.get("/get-token", (req, res) => {
 
   try {
     const token = jwt.sign(payload, SECRET_KEY, options);
-    console.log(`Generated Token: ${token}`);
     res.json({ token });
   } catch (error) {
-    console.error("Error generating token:", error);
     res.status(500).json({ error: "Error generating token" });
   }
 });
-
 
 // Create Meeting
 app.post("/create-meeting/", (req, res) => {
@@ -60,28 +54,22 @@ app.post("/create-meeting/", (req, res) => {
   const options = {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${token}`,  // Ensure the correct prefix
+      Authorization: `Bearer ${token}`,
       "Content-Type": "application/json"
     },
     body: JSON.stringify({ region }),
   };
 
   fetch(url, options)
-    .then((response) => {
+    .then(response => response.text().then(text => {
       if (!response.ok) {
-        return response.text().then(text => {
-          throw new Error(`HTTP error! status: ${response.status}, message: ${text}`);
-        });
+        throw new Error(`HTTP error! status: ${response.status}, message: ${text}`);
       }
-      return response.json();
-    })
-    .then((result) => res.json(result))
-    .catch((error) => {
-      console.error("Error creating meeting:", error);
-      res.status(500).json({ error: error.message });
-    });
+      return JSON.parse(text);
+    }))
+    .then(result => res.json(result))
+    .catch(error => res.status(500).json({ error: error.message }));
 });
-
 
 // Validate Meeting
 app.post("/validate-meeting/:meetingId", (req, res) => {
@@ -95,21 +83,13 @@ app.post("/validate-meeting/:meetingId", (req, res) => {
   const url = `${process.env.VIDEOSDK_API_ENDPOINT}/api/meetings/${meetingId}`;
   const options = {
     method: "POST",
-    headers: { Authorization: token },
+    headers: { Authorization: `Bearer ${token}` },
   };
 
   fetch(url, options)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
-      }
-      return response.json();
-    })
-    .then((result) => res.json(result))
-    .catch((error) => {
-      console.error("Error validating meeting:", error);
-      res.status(500).json({ error: error.message });
-    });
+    .then(response => response.json())
+    .then(result => res.json(result))
+    .catch(error => res.status(500).json({ error: error.message }));
 });
 
 // Start server
