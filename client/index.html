@@ -1,19 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>XCall</title>
-  <link rel="stylesheet" href="style.css">
+    <title>Video Call App</title>
+    <style>
+        .video-frame {
+            border: 1px solid black;
+            margin: 5px;
+            display: inline-block;
+        }
+    </style>
 </head>
 <body>
-  <h1>Welcome to XCall</h1>
-  <div id="meeting-container">
-    <button id="create-meeting">Create Meeting</button>
-    <button id="join-meeting">Join Meeting</button>
-    <div id="meeting-area"></div>
-  </div>
-  <script src="https://sdk.videosdk.live/js-sdk/0.0.86/videosdk.js"></script>
-  <script src="index.js"></script>
+    <div id="join-screen">
+        <!-- Create new Meeting Button -->
+        <button id="createMeetingBtn">New Meeting</button>
+        OR
+        <!-- Join existing Meeting -->
+        <input type="text" id="meetingIdTxt" placeholder="Enter Meeting ID" />
+        <button id="joinBtn">Join Meeting</button>
+    </div>
+
+    <!-- for Managing meeting status -->
+    <div id="textDiv"></div>
+
+    <div id="grid-screen" style="display: none">
+        <!-- To Display Meeting ID -->
+        <h3 id="meetingIdHeading"></h3>
+
+        <!-- Controllers -->
+        <button id="leaveBtn">Leave</button>
+        <button id="toggleMicBtn">Toggle Mic</button>
+        <button id="toggleWebCamBtn">Toggle Webcam</button>
+
+        <!-- render Video -->
+        <div class="row" id="videoContainer"></div>
+    </div>
+
+    <!-- Add VideoSDK script -->
+    <script src="https://sdk.videosdk.live/js-sdk/0.0.86/videosdk.js"></script>
+    <script src="config.js"></script>
+    <script src="index.js"></script>
 </body>
 </html>

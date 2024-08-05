@@ -1,10 +1,10 @@
-require('dotenv').config(); // Must be at the top
+require("dotenv").config();
 
-const express = require('express');
-const cors = require('cors');
-const morgan = require('morgan');
-const fetch = require('node-fetch');
-const jwt = require('jsonwebtoken');
+const express = require("express");
+const cors = require("cors");
+const morgan = require("morgan");
+const fetch = require("node-fetch");
+const jwt = require("jsonwebtoken");
 
 const PORT = 9000;
 const app = express();
@@ -31,13 +31,15 @@ app.get("/get-token", (req, res) => {
   const options = { expiresIn: "10m", algorithm: "HS256" };
   const payload = {
     apikey: API_KEY,
-    permissions: ["allow_join", "allow_mod"],
+    permissions: ["allow_join", "allow_mod"], // also accepts "ask_join"
   };
 
   try {
     const token = jwt.sign(payload, SECRET_KEY, options);
+    console.log(`Generated Token: ${token}`);
     res.json({ token });
   } catch (error) {
+    console.error("Error generating token:", error);
     res.status(500).json({ error: "Error generating token" });
   }
 });
@@ -54,22 +56,26 @@ app.post("/create-meeting/", (req, res) => {
   const options = {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,  // Make sure to use 'Bearer' prefix if required
       "Content-Type": "application/json"
     },
     body: JSON.stringify({ region }),
   };
 
   fetch(url, options)
-    .then(response => response.text().then(text => {
+    .then((response) => {
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}, message: ${text}`);
+        throw new Error(`Error: ${response.statusText}`);
       }
-      return JSON.parse(text);
-    }))
-    .then(result => res.json(result))
-    .catch(error => res.status(500).json({ error: error.message }));
+      return response.json();
+    })
+    .then((result) => res.json(result))
+    .catch((error) => {
+      console.error("Error creating meeting:", error);
+      res.status(500).json({ error: error.message });
+    });
 });
+
 
 // Validate Meeting
 app.post("/validate-meeting/:meetingId", (req, res) => {
@@ -83,13 +89,21 @@ app.post("/validate-meeting/:meetingId", (req, res) => {
   const url = `${process.env.VIDEOSDK_API_ENDPOINT}/api/meetings/${meetingId}`;
   const options = {
     method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
+    headers: { Authorization: token },
   };
 
   fetch(url, options)
-    .then(response => response.json())
-    .then(result => res.json(result))
-    .catch(error => res.status(500).json({ error: error.message }));
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+      return response.json();
+    })
+    .then((result) => res.json(result))
+    .catch((error) => {
+      console.error("Error validating meeting:", error);
+      res.status(500).json({ error: error.message });
+    });
 });
 
 // Start server
