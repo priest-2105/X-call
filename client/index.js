@@ -192,7 +192,11 @@ createButton.addEventListener("click", async () => {
 
 // Leave Meeting Button Event Listener
 leaveButton.addEventListener("click", async () => {
-  meeting?.le
+  meeting?.leave();
+  document.getElementById("grid-screen").style.display = "none";
+  document.getElementById("join-screen").style.display = "block";
+});
+
 // Toggle Mic Button Event Listener
 toggleMicButton.addEventListener("click", async () => {
   if (isMicOn) {
