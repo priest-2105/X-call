@@ -1,4 +1,4 @@
-package com.bailey.xcall;
+package com.bailey.xcall.user;
 
 import lombok.Builder;
 import lombok.Data;

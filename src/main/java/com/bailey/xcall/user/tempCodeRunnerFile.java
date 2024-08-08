@@ -1,8 +1,12 @@
-package com.bailey.xcall;
+package com.bailey.xcall.user;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.IntStream;
 
 import org.springframework.stereotype.Service;
 
-@Serivce
+@Service
 
 public class UserService {
 
@@ -15,12 +19,12 @@ public class UserService {
         }
 
         public User login(User user) {
-            var userIndex = IntStream.rango(0, USERS_LIST.size())
+            var userIndex = IntStream.range(0, USERS_LIST.size())
                         .filter(i -> USERS_LIST.getId(i).getEmail().equals(user.getEmail()))
                         .findAny()
                         .orElseThrow(() -> new RuntimeException("User Not Found"));
             var cUSer = USER_LIST.get(userIndex);
-            if(cUSer.getPassword().equals(user.getPassword())) {
+            if(!cUSer.getPassword().equals(user.getPassword())) {
                        throw new RuntimeException("Password Incorrect");
             }
             cUSer.setStatus("Online");
