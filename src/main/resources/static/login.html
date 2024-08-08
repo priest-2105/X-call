@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Page</title>
+  <link rel="stylesheet" href="./css/styles.css">
+  <link rel="stylesheet" href="./css/index.css">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+  <style>
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f1f1f1; /* Change the background color of the page */
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.login-form,
+.social-icons {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.social-icons {
+    margin-right: 20px;
+    height: fit-content;
+}
+
+.social-icons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.login-form input[type="text"],
+.login-form input[type="password"],
+.login-form input[type="email"],
+.login-form button {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box; /* Include padding and border in the width */
+}
+
+.login-form button {
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+.login-form p {
+    margin-top: 10px;
+}
+
+.login-form a {
+    color: #4CAF50;
+    text-decoration: none;
+}
+
+.social-icons h2 {
+    margin-bottom: 20px;
+}
+
+.social-icons a {
+    display: inline-block;
+    margin: 5px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #4CAF50;
+    color: #fff;
+    text-align: center;
+    line-height: 40px;
+    text-decoration: none;
+}
+
+.user-email {
+    font-size: 15px !important;
+}
+
+
+
+  </style>
+
+
+
+
+
+
+
+
+
+
+  </head>
+<body>
+<div class="container">
+  <div class="social-icons">
+    <h2>Join Us</h2>
+    <a href="#" target="_blank"><i class="fa fa-instagram"></i></a>
+    <a href="#" target="_blank"><i class="fa fa-facebook"></i></a>
+    <a href="#" target="_blank"><i class="fa fa-linkedin"></i></a>
+    <a href="#" target="_blank"><i class="fa fa-github"></i></a>
+  </div>
+  <div class="login-form">
+    <h2>Login</h2>
+    <form id="loginForm">
+      <label for="email">Email:</label>
+      <input type="email" id="email" required>
+
+      <label for="password">Password:</label>
+      <input type="password" id="password" required>
+
+      <button type="submit">Login</button>
+    </form>
+    <p>Don't have an account? <a href="./register.html">Register</a></p>
+  </div>
+</div>
+<script src="./js/login.js"></script>
+</body>
+</html>
