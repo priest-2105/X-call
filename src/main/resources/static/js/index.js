@@ -85,4 +85,4 @@ function handleJoinMeeting() {
 }
 
 const joinMeetingBtn = document.getElementById("joinMeetingBtn");
-joinMeetingBtn.addEventListener("click", handleJoinMeeting);
+joinMeetingBtn.addEventListener("click", handleJoinMeeting); 
