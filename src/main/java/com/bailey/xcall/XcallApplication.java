@@ -66,18 +66,18 @@ public class XcallApplication {
 	// 		.password("adams2024")
 	// 		.build());
 	
-	// service.register(User.builder()
-	// 		.username("james_clark")
-	// 		.email("james.clark@example.com")
-	// 		.password("clarkkey")
-	// 		.build());
+	service.register(User.builder()
+			.username("james_clark")
+			.email("james.clark@example.com")
+			.password("clarkkey")
+			.build());
 	
-	// service.register(User.builder()
-	// 		.username("olivia_johnson")
-	// 		.email("olivia.johnson@example.com")
-	// 		.password("johnson_olivia")
-	// 		.build());
+	service.register(User.builder()
+			.username("olivia_johnson")
+			.email("olivia.johnson@example.com")
+			.password("johnson_olivia")
+			.build());
 	
-    //     };
+        };
     }
 }
